@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { watchpartySocket } from "../../sockets/watchparty.socket";
 import { useAuthStore } from "../../store/authStore";
 import { FiUsers } from "react-icons/fi";
+import UserAvatar from "../common/UserAvatar";
 
 export default function WatchPartyParticipants({ roomCode, room }) {
   const { user } = useAuthStore();
@@ -113,8 +114,9 @@ export default function WatchPartyParticipants({ roomCode, room }) {
           >
             {/* Avatar */}
             <div className="relative">
-              <img
-                src={p.avatar || `https://i.pravatar.cc/40?u=${p.id}`}
+              <UserAvatar
+                src={p.avatar}
+                name={p.username}
                 alt={p.username}
                 className="w-10 h-10 rounded-full object-cover border border-white/10 shadow-md"
               />

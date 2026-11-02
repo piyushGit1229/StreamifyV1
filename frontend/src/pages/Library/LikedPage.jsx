@@ -3,6 +3,8 @@ import { getLikedVideos } from "../../api/likedApi";
 import AmbientVideoLink from "../../components/video/AmbientVideoLink";
 import { useAuthStore } from "../../store/authStore";
 import Skeleton from "../../components/common/Skeleton";
+import MediaThumbnail from "../../components/common/MediaThumbnail";
+import { useGuestActions } from "../../components/common/guestActionContext";
 import {
   FiDownload,
   FiMoreHorizontal,
@@ -13,7 +15,9 @@ import {
 export default function LikedVideosPage() {
   const [liked, setLiked] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const initialized = useAuthStore((state) => state.initialized);
+  const { requireAuth } = useGuestActions();
 
   // Glow effect mouse tracking
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
@@ -30,6 +34,11 @@ export default function LikedVideosPage() {
   }, []);
 
   useEffect(() => {
+    if (!initialized) return;
+    if (!user) {
+      requireAuth();
+      return;
+    }
     getLikedVideos()
       .then((res) => {
         const raw = res.data;
@@ -39,11 +48,11 @@ export default function LikedVideosPage() {
         setLiked(likedVideos);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [initialized, user, requireAuth]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white p-10 flex gap-10">
+      <div className="sf-screen sf-collection-screen sf-liked-screen min-h-screen bg-black text-white p-10 flex gap-10">
         <div className="w-[380px] shrink-0 space-y-5">
           <Skeleton className="h-48 w-full rounded-xl" />
           <Skeleton className="h-7 w-2/3" />
@@ -60,22 +69,21 @@ export default function LikedVideosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-10 flex gap-10 relative overflow-hidden">
+    <div className="sf-screen sf-collection-screen sf-liked-screen min-h-screen bg-black text-white p-10 flex gap-10 relative overflow-hidden">
 
       {/* ========= GLOW BACKGROUND ========= */}
       <BackgroundGlow mouse={mouse} />
 
       {/* ========= LEFT FIXED PANEL ========= */}
-      <div className="w-[380px] rounded-3xl p-6 bg-gradient-to-b from-[#1c2333] to-black border border-white/10 shadow-2xl sticky top-8 h-fit z-10">
+      <div className="sf-library-hero w-[380px] rounded-3xl p-6 bg-gradient-to-b from-[#1c2333] to-black border border-white/10 shadow-2xl sticky top-8 h-fit z-10">
 
         {/* Thumbnail Preview */}
         <div className="w-full h-48 rounded-xl overflow-hidden mb-6 shadow-lg">
-          <img
-            src={
-              liked[0]?.thumbnailUrl ||
-              "https://i.ytimg.com/img/no_thumbnail.jpg"
-            }
+          <MediaThumbnail
+            src={liked[0]?.thumbnailUrl}
+            title={liked[0]?.title || "Liked videos"}
             className="w-full h-full object-cover"
+            loading="eager"
           />
         </div>
 
@@ -110,9 +118,15 @@ export default function LikedVideosPage() {
       </div>
 
       {/* ========= RIGHT SCROLLABLE LIST ========= */}
-      <div className="flex-1 max-h-[calc(100vh-40px)] overflow-y-auto pr-4 relative z-10">
+      <div className="sf-library-list flex-1 max-h-[calc(100vh-40px)] overflow-y-auto pr-4 relative z-10">
 
         <div className="space-y-6">
+          {liked.length === 0 && (
+            <div className="sf-library-empty">
+              <h2>No liked videos yet</h2>
+              <p>Videos you like will be collected here.</p>
+            </div>
+          )}
           {liked.map((video, index) => (
             <LikedVideoRow key={video._id} index={index + 1} video={video} />
           ))}
@@ -159,7 +173,7 @@ function LikedVideoRow({ video, index }) {
     <AmbientVideoLink
       to={`/watch/${video._id}`}
       video={video}
-      className="flex gap-4 group p-3 rounded-xl transition"
+      className="sf-library-row flex gap-4 group p-3 rounded-xl transition"
     >
       {/* index number */}
       <div className="text-gray-500 w-6 text-right group-hover:text-white">
@@ -168,8 +182,9 @@ function LikedVideoRow({ video, index }) {
 
       {/* thumbnail */}
       <div className="sf-ambient-thumb relative w-48 h-28 rounded-xl overflow-hidden">
-        <img
+        <MediaThumbnail
           src={video.thumbnailUrl}
+          title={video.title}
           className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
         />
         <span className="absolute bottom-1 right-1 bg-black/80 px-2 py-1 text-xs rounded">

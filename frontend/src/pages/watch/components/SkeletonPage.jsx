@@ -2,7 +2,7 @@ import Skeleton from "../../../components/common/Skeleton";
 
 export default function SkeletonPage() {
   return (
-    <div className="min-h-screen text-white bg-black">
+    <div className="sf-screen sf-watch-screen min-h-screen text-white bg-black">
       <div className="w-full flex justify-center">
         <div className="max-w-[1600px] w-full px-6 py-6 flex gap-6">
           <div className="flex-1 min-w-0 space-y-6">

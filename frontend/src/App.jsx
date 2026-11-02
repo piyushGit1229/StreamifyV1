@@ -16,18 +16,20 @@ import ProfilePage from "./components/profile/ProfilePage";
 import MyCutsPage from "./pages/Library/MyCutsPage";
 import WatchPartyPage from "./pages/WatchParty/WatchPartyPage";
 import SearchResultsPage from "./pages/Search/SearchResultsPage";
+import { GuestActionProvider, RequireSignIn } from "./components/common/GuestActionProvider";
 
 
 
 
 export default function App() {
   return (
+    <GuestActionProvider>
     <Routes>
 
       {/* Auth pages */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
-      <Route path="/upload" element={<UploadPage />} />
+      <Route path="/upload" element={<RequireSignIn title="Creator Studio" description="Sign in to upload videos and manage your channel."><UploadPage /></RequireSignIn>} />
 
       {/* Home */}
       <Route
@@ -73,7 +75,7 @@ export default function App() {
           path="/liked"
           element={
             <MainLayout>
-              <LikedVideosPage />
+            <RequireSignIn title="Liked videos" description="Sign in to revisit the videos you have liked."><LikedVideosPage /></RequireSignIn>
             </MainLayout>
           }
        />
@@ -82,7 +84,7 @@ export default function App() {
   path="/playlists"
   element={
     <MainLayout>
-      <MyPlaylistsPage />
+    <RequireSignIn title="Your playlists" description="Sign in to create and manage your video collections."><MyPlaylistsPage /></RequireSignIn>
     </MainLayout>
   }
 />
@@ -91,7 +93,7 @@ export default function App() {
   path="/playlist/:id"
   element={
     <MainLayout>
-      <PlaylistDetailPage />
+      <RequireSignIn title="Your playlist" description="Sign in to view and manage your saved playlist."><PlaylistDetailPage /></RequireSignIn>
     </MainLayout>
   }
 />
@@ -102,7 +104,7 @@ export default function App() {
   path="/subscriptions"
   element={
     <MainLayout>
-      <MysubscriptionsPage/>
+            <RequireSignIn title="Your subscriptions" description="Sign in to see the creators you follow."><MysubscriptionsPage /></RequireSignIn>
     </MainLayout>
   }
 />
@@ -121,7 +123,7 @@ export default function App() {
   path="/profile"
   element={
     <MainLayout>
-      <ProfilePage />
+            <RequireSignIn title="Your channel" description="Sign in to manage your profile and channel details."><ProfilePage /></RequireSignIn>
     </MainLayout>
   }
 />
@@ -130,13 +132,13 @@ export default function App() {
   path="/mycuts"
   element={
     <MainLayout>
-      <MyCutsPage />
+            <RequireSignIn title="Your saved cuts" description="Sign in to revisit your favorite video moments."><MyCutsPage /></RequireSignIn>
     </MainLayout>
   }
 />
 
 
-<Route path="/watchparty/:roomCode" element={<WatchPartyPage />} />
+<Route path="/watchparty/:roomCode" element={<RequireSignIn title="Watch together" description="Sign in to join a Watch Party and connect with friends."><WatchPartyPage /></RequireSignIn>} />
 
 
 
@@ -153,5 +155,6 @@ export default function App() {
 
 
     </Routes>
+    </GuestActionProvider>
   );
 }

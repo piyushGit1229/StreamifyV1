@@ -2,6 +2,8 @@ import { useState } from "react";
 import { createCut } from "../../api/cutApi";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { FiPlay, FiSave, FiScissors } from "react-icons/fi";
+import { useGuestActions } from "../common/guestActionContext";
 
 export default function CutCreator() {
   const { id: videoId } = useParams();
@@ -10,8 +12,10 @@ export default function CutCreator() {
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   const [title, setTitle] = useState("");
+  const { requireAuth } = useGuestActions();
 
   const handleSaveCut = async () => {
+    if (!requireAuth()) return;
     if (!start || !end || Number(start) >= Number(end)) {
       toast.error("Invalid start/end time");
       return;
@@ -40,49 +44,69 @@ export default function CutCreator() {
   };
 
   return (
-    <div className="bg-[#111]/60 border border-white/10 rounded-xl p-5 mt-6 backdrop-blur-lg shadow-xl">
-
-      <h2 className="text-xl font-semibold mb-3">Create Cut</h2>
-
-      <input
-        placeholder="Cut title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="w-full mb-3 px-3 py-2 rounded-lg bg-black border border-white/10 text-white"
-      />
-
-      <div className="flex gap-3 mb-4">
-        <input
-          placeholder="Start sec"
-          type="number"
-          value={start}
-          onChange={(e) => setStart(e.target.value)}
-          className="flex-1 px-3 py-2 rounded-lg bg-black border border-white/10 text-white"
-        />
-        <input
-          placeholder="End sec"
-          type="number"
-          value={end}
-          onChange={(e) => setEnd(e.target.value)}
-          className="flex-1 px-3 py-2 rounded-lg bg-black border border-white/10 text-white"
-        />
+    <section className="sf-cut-creator" aria-labelledby="sf-cut-creator-title">
+      <div className="sf-cut-creator-heading">
+        <span className="sf-cut-creator-icon" aria-hidden="true"><FiScissors /></span>
+        <div>
+          <p className="sf-cut-eyebrow">MAKE A CLIP</p>
+          <h2 id="sf-cut-creator-title">Create a cut</h2>
+          <p className="sf-cut-description">Save a favorite moment from this video.</p>
+        </div>
       </div>
 
-      <div className="flex gap-3">
+      <div className="sf-cut-fields">
+        <label className="sf-cut-field sf-cut-title-field" htmlFor="sf-cut-title">
+          <span>Cut title</span>
+          <input
+            id="sf-cut-title"
+            placeholder="Give this moment a name"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="sf-cut-input"
+          />
+        </label>
+
+        <div className="sf-cut-time-fields">
+          <label className="sf-cut-field" htmlFor="sf-cut-start">
+            <span>Start time <small>seconds</small></span>
+            <input
+              id="sf-cut-start"
+              placeholder="0"
+              type="number"
+              value={start}
+              onChange={(e) => setStart(e.target.value)}
+              className="sf-cut-input"
+            />
+          </label>
+          <label className="sf-cut-field" htmlFor="sf-cut-end">
+            <span>End time <small>seconds</small></span>
+            <input
+              id="sf-cut-end"
+              placeholder="0"
+              type="number"
+              value={end}
+              onChange={(e) => setEnd(e.target.value)}
+              className="sf-cut-input"
+            />
+          </label>
+        </div>
+      </div>
+
+      <div className="sf-cut-actions">
         <button
           onClick={handleSaveCut}
-          className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition"
+          className="sf-cut-save"
         >
-          Save Cut
+          <FiSave aria-hidden="true" /> Save cut
         </button>
 
         <button
           onClick={handlePlayCut}
-          className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition"
+          className="sf-cut-preview"
         >
-          Play Cut
+          <FiPlay aria-hidden="true" /> Preview cut
         </button>
       </div>
-    </div>
+    </section>
   );
 }

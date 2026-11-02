@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { HiDotsVertical } from "react-icons/hi";
 import useAmbientCardColor from "./useAmbientCardColor";
+import MediaThumbnail from "../common/MediaThumbnail";
+import { cachePublicVideo } from "../../api/publicVideoCache";
 
 export default function RelatedCard({ video }) {
   const { ambientColor, loadAmbientColor } = useAmbientCardColor(video.thumbnailUrl);
@@ -8,6 +10,8 @@ export default function RelatedCard({ video }) {
   return (
     <Link
       to={`/watch/${video._id}`}
+      state={{ video }}
+      onClick={() => cachePublicVideo(video)}
       onPointerEnter={loadAmbientColor}
       onFocus={loadAmbientColor}
       style={{ "--sf-card-ambient": ambientColor }}
@@ -32,9 +36,10 @@ export default function RelatedCard({ video }) {
       >
         {/* Thumbnail */}
         <div className="sf-ambient-thumb relative w-40 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-black/50">
-          <img
+          <MediaThumbnail
             src={video.thumbnailUrl}
             alt={video.title}
+            title={video.title}
             className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
           />
 

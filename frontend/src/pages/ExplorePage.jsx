@@ -3,6 +3,9 @@ import { getExploreData } from "../api/exploreApi";
 import { Link } from "react-router-dom";
 import useAmbientCardColor from "../components/video/useAmbientCardColor";
 import Skeleton from "../components/common/Skeleton";
+import UserAvatar from "../components/common/UserAvatar";
+import MediaThumbnail from "../components/common/MediaThumbnail";
+import { cachePublicVideo } from "../api/publicVideoCache";
 
 // React Icons
 import {
@@ -58,59 +61,27 @@ export default function ExplorePage() {
   const videos = data[selected] || [];
 
   return (
-    <div className="relative min-h-screen bg-[#0f0f12] text-white p-10 overflow-hidden">
+    <div
+      className="sf-screen sf-explore-screen sf-discovery-screen"
+      style={{ "--sf-pointer-x": `${mouse.x}px`, "--sf-pointer-y": `${mouse.y}px` }}
+    >
+      <div className="sf-discovery-content">
+        <header className="sf-page-heading-row sf-discovery-heading">
+          <div>
+            <span className="sf-eyebrow">FIND YOUR NEXT FAVORITE</span>
+            <h1 className="sf-page-title">Explore</h1>
+            <p>Fresh creators, new interests, and videos worth your time.</p>
+          </div>
+        </header>
 
-      {/* ------------------ BLUE GLOW BG ------------------ */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div
-          className="absolute w-[500px] h-[500px] bg-[#2563eb]/25 blur-3xl rounded-full animate-pulse"
-          style={{
-            top: "18%",
-            left: "10%",
-            transform: `translate(${mouse.x * 0.4}px, ${mouse.y * 0.4}px)`
-          }}
-        />
-        <div
-          className="absolute w-[380px] h-[380px] bg-[#3b82f6]/25 blur-3xl rounded-full animate-pulse"
-          style={{
-            bottom: "10%",
-            right: "18%",
-            transform: `translate(${mouse.x * -0.4}px, ${mouse.y * -0.4}px)`
-          }}
-        />
-      </div>
-
-      {/* ------------------ PAGE CONTENT ------------------ */}
-      <div className="relative z-10">
-
-        {/* HEADER */}
-        <div className="mb-12">
-          <h1 className="text-5xl font-extrabold tracking-tight">Explore</h1>
-          <p className="text-gray-400 mt-2 text-lg">
-            Discover trending topics, creators, and the latest videos.
-          </p>
-        </div>
-
-        {/* CATEGORY TABS (React Icons Instead of Emojis) */}
-        <div className="
-            flex gap-3 overflow-x-auto border-b border-white/10 pb-4
-            sticky top-0 bg-[#0f0f12]/80 backdrop-blur-xl z-20 rounded-lg
-          "
-          style={{ scrollbarWidth: "none" }}
-        >
+        <div className="sf-category-rail" role="tablist" aria-label="Explore categories">
           {categories.map((cat) => (
             <button
               key={cat.key}
               onClick={() => setSelected(cat.key)}
-              className={`
-                flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold
-                transition-all duration-200
-                ${
-                  selected === cat.key
-                    ? "bg-white text-black shadow-md"
-                    : "bg-white/10 hover:bg-white/20 text-gray-300"
-                }
-              `}
+              role="tab"
+              aria-selected={selected === cat.key}
+              className={`sf-category-chip ${selected === cat.key ? "is-selected" : ""}`}
             >
               {cat.icon}
               {cat.label}
@@ -118,29 +89,26 @@ export default function ExplorePage() {
           ))}
         </div>
 
-        {/* LOADING */}
         {loading && (
-          <div className="grid mt-10 gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="sf-video-grid sf-explore-grid">
             {Array.from({ length: 8 }, (_, index) => (
               <Skeleton key={index} variant="card" />
             ))}
           </div>
         )}
 
-        {/* VIDEO GRID */}
-        <div className="grid mt-10 gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="sf-video-grid sf-explore-grid">
           {!loading && videos.map((v) => (
             <ExploreCard key={v._id} video={v} />
           ))}
 
           {!videos.length && !loading && (
-            <p className="text-gray-500 col-span-full text-center text-lg">
+            <p className="sf-empty-state">
               No videos found in this category.
             </p>
           )}
         </div>
 
-        {/* POPULAR CHANNELS */}
         <PopularChannels channels={data.popularChannels || []} />
       </div>
     </div>
@@ -154,32 +122,25 @@ function ExploreCard({ video }) {
   return (
     <Link
       to={`/watch/${video._id}`}
+      state={{ video }}
+      onClick={() => cachePublicVideo(video)}
       onPointerEnter={loadAmbientColor}
       onFocus={loadAmbientColor}
       style={{ "--sf-card-ambient": ambientColor }}
-      className="
-        sf-ambient-card group rounded-xl overflow-hidden 
-        hover:scale-[1.04] hover:shadow-[0_0_30px_rgba(37,99,235,0.3)]
-        hover:border-blue-500/30 transition-all duration-300 relative
-      "
+      className="sf-video-card sf-explore-card group"
     >
-      <div className="sf-ambient-thumb relative w-full aspect-video overflow-hidden">
-        <img
-          src={video.thumbnailUrl}
-          alt={video.title}
-          className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
-        />
-        <span className="absolute bottom-1 right-1 bg-black/70 text-[10px] px-2 py-1 rounded">
-          {formatDuration(video.duration)}
-        </span>
+      <div className="sf-video-thumb">
+        <MediaThumbnail src={video.thumbnailUrl} alt={video.title} title={video.title} loading="lazy" />
+        <span className="sf-video-duration">{formatDuration(video.duration)}</span>
       </div>
 
-      <div className="p-3">
-        <h3 className="font-semibold text-white line-clamp-2 group-hover:text-blue-400 transition">
-          {video.title}
-        </h3>
-        <p className="text-sm text-gray-400 mt-1">{video.owner?.name}</p>
-        <p className="text-xs text-gray-500">{video.views} views</p>
+      <div className="sf-video-info">
+        <UserAvatar className="sf-video-avatar" src={video.owner?.avatar} name={video.owner?.name || "Creator"} alt="" />
+        <div className="sf-video-copy">
+          <p className="sf-video-title">{video.title}</p>
+          <p className="sf-video-channel">{video.owner?.name}</p>
+          <p className="sf-video-meta">{video.views || 0} views</p>
+        </div>
       </div>
     </Link>
   );
@@ -190,31 +151,26 @@ function PopularChannels({ channels }) {
   if (!channels.length) return null;
 
   return (
-    <div className="mt-20">
-      <h2 className="text-2xl font-bold mb-6">Popular Channels</h2>
+    <section className="sf-popular-channels">
+      <div className="sf-section-heading">
+        <div><span className="sf-eyebrow">CREATORS TO KNOW</span><h2>Popular channels</h2></div>
+      </div>
 
-      <div className="grid gap-6 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="sf-channel-grid">
         {channels.map((ch) => (
           <Link
             key={ch._id}
             to={`/channel/${ch._id}`}
-            className="
-              flex flex-col items-center bg-[#111] p-4 rounded-xl 
-              border border-white/10 hover:bg-white/10 hover:scale-105 
-              transition-all duration-300
-            "
+            className="sf-channel-card"
           >
-            <img
-              src={ch.avatar || "https://i.pravatar.cc/80"}
-              className="w-16 h-16 rounded-full object-cover border border-white/20"
-            />
-            <p className="mt-3 font-semibold text-sm">{ch.name}</p>
-            <span className="text-xs text-gray-400">
+            <UserAvatar src={ch.avatar} name={ch.name} className="sf-channel-avatar" />
+            <p className="sf-channel-name">{ch.name}</p>
+            <span className="sf-channel-meta">
               {ch.subscribersCount || 0} subs
             </span>
           </Link>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

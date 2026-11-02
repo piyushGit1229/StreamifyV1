@@ -3,6 +3,13 @@ import { axiosInstance } from "./axiosInstance";
 export const getVideo = (id, incViews = false) =>
 axiosInstance.get(`/videos/${id}${incViews ? '?inc=true' : ''}`);
 
+// These read-only routes are public and support guest discovery/playback fallbacks.
+export const getPublicTrendingVideos = (limit = 20) =>
+  axiosInstance.get(`/videos/trending?limit=${limit}`);
+
+export const getRelatedVideos = (id) =>
+  axiosInstance.get(`/videos/${id}/related`);
+
 // export const getRelatedVideos = (id) =>
 //   axiosInstance.get(`/videos/${id}/related`);
 

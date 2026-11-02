@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { getMyPlaylists, addVideoToPlaylist } from "../../api/playlistApi";
+import { useGuestActions } from "./guestActionContext";
 
 export default function AddToPlaylist({ videoId }) {
   const [open, setOpen] = useState(false);
   const [playlists, setPlaylists] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { requireAuth } = useGuestActions();
   
   useEffect(() => {
     if (!open) return;
@@ -13,7 +15,8 @@ export default function AddToPlaylist({ videoId }) {
     });
   }, [open]);
 
-  const handleAdd = async (playlistId, playlistName) => {
+  const handleAdd = async (playlistId) => {
+    if (!requireAuth()) return;
     setLoading(true);
     try {
       await addVideoToPlaylist(playlistId, videoId);
@@ -28,7 +31,10 @@ export default function AddToPlaylist({ videoId }) {
     <div className="relative">
       {/* BUTTON */}
       <button
-        onClick={() => setOpen((p) => !p)}
+        onClick={() => {
+          if (!requireAuth()) return;
+          setOpen((p) => !p);
+        }}
         className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium border border-white/10 shadow-lg backdrop-blur-sm bg-white/5 text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-200 group"
       >
         Add to Playlist
@@ -53,7 +59,7 @@ export default function AddToPlaylist({ videoId }) {
             {playlists.map((p) => (
               <button
                 key={p._id}
-                onClick={() => handleAdd(p._id, p.name)}
+                onClick={() => handleAdd(p._id)}
                 className="w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-[#1c1c27] transition flex items-center gap-2"
               >
                 ➕ {p.name}

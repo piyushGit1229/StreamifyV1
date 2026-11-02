@@ -9,7 +9,7 @@ export default function MainLayout({ children }) {
 
       <div className="sf-main">
         <Navbar />
-        <main>{children}</main>
+        <main className="sf-workspace">{children}</main>
       </div>
 
     </div>

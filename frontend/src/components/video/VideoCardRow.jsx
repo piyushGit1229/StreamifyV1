@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import useAmbientCardColor from "./useAmbientCardColor";
+import MediaThumbnail from "../common/MediaThumbnail";
+import { cachePublicVideo } from "../../api/publicVideoCache";
 
 export default function VideoCardRow({ video }) {
   const { ambientColor, loadAmbientColor } = useAmbientCardColor(video.thumbnailUrl);
@@ -7,6 +9,8 @@ export default function VideoCardRow({ video }) {
   return (
     <Link
       to={`/watch/${video._id}`}
+      state={{ video }}
+      onClick={() => cachePublicVideo(video)}
       onPointerEnter={loadAmbientColor}
       onFocus={loadAmbientColor}
       style={{ "--sf-card-ambient": ambientColor }}
@@ -14,9 +18,10 @@ export default function VideoCardRow({ video }) {
     >
       {/* Thumbnail */}
       <div className="sf-ambient-thumb w-80 h-44 bg-black rounded-xl overflow-hidden flex-shrink-0">
-        <img
+        <MediaThumbnail
           src={video.thumbnailUrl}
           alt={video.title}
+          title={video.title}
           className="w-full h-full object-cover"
         />
       </div>

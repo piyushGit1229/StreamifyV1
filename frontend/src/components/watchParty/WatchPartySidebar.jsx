@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { watchpartySocket } from "../../sockets/watchparty.socket";
 import { useAuthStore } from "../../store/authStore";
 import { FiMessageSquare, FiUsers, FiSend } from "react-icons/fi";
+import UserAvatar from "../common/UserAvatar";
 
 const EMOJI_REACTIONS = ["❤️", "😂", "😮", "😢", "😡", "👍", "👎", "🔥"];
 
@@ -175,13 +176,7 @@ export default function WatchPartySidebar({ roomCode, room }) {
                   className={`flex gap-3 ${msg.isOwn ? "justify-end" : ""}`}
                 >
                   {!msg.isOwn && (
-                    <img
-                      src={
-                        msg.avatar ||
-                        `https://ui-avatars.com/api/?name=${msg.username}&background=555&color=fff`
-                      }
-                      className="w-8 h-8 rounded-full"
-                    />
+                    <UserAvatar src={msg.avatar} name={msg.username} className="w-8 h-8 rounded-full" alt={msg.username} />
                   )}
 
                   <div className={`max-w-[70%] ${msg.isOwn ? "text-right" : ""}`}>
@@ -251,13 +246,7 @@ export default function WatchPartySidebar({ roomCode, room }) {
 
           {/* HOST */}
           <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex gap-3 items-center">
-            <img
-              src={
-                room.host?.avatar ||
-                `https://ui-avatars.com/api/?name=${room.host?.name}&background=ff4444&color=fff`
-              }
-              className="w-10 h-10 rounded-full"
-            />
+            <UserAvatar src={room.host?.avatar} name={room.host?.name || "Host"} className="w-10 h-10 rounded-full" alt={room.host?.name || "Host"} />
             <div>
               <p className="text-white font-semibold">{room.host?.name}</p>
               <p className="text-xs text-red-400 font-medium">Host</p>
@@ -270,13 +259,7 @@ export default function WatchPartySidebar({ roomCode, room }) {
               key={p.id}
               className="p-3 rounded-xl bg-white/5 border border-white/10 flex gap-3 items-center"
             >
-              <img
-                src={
-                  p.avatar ||
-                  `https://ui-avatars.com/api/?name=${p.username}&background=555&color=fff`
-                }
-                className="w-10 h-10 rounded-full"
-              />
+              <UserAvatar src={p.avatar} name={p.username} className="w-10 h-10 rounded-full" alt={p.username} />
               <div>
                 <p className="text-white font-medium">{p.username}</p>
                 <p

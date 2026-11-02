@@ -32,13 +32,13 @@ export default function SearchResultsPage() {
   }, [query]);
 
   return (
-    <div className="min-h-screen bg-[#0d0d0f] text-white flex">
+    <div className="sf-screen sf-search-screen min-h-screen bg-[#0d0d0f] text-white flex">
 
       {/* SIDEBAR — FIXED WIDTH */}
       <Sidebar />
 
       {/* MAIN CONTENT */}
-      <div className="flex flex-col w-full ml-70"> 
+      <div className="sf-search-main flex flex-col w-full ml-70">
         {/* ml-64 = 256px margin-left → prevents overlap */}
 
         <Navbar />

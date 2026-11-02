@@ -11,11 +11,15 @@ import {
 } from "react-icons/fi";
 import useAmbientCardColor from "../../components/video/useAmbientCardColor";
 import Skeleton from "../../components/common/Skeleton";
+import MediaThumbnail from "../../components/common/MediaThumbnail";
+import { useGuestActions } from "../../components/common/guestActionContext";
 
 export default function MyCutsPage() {
   const [cuts, setCuts] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuthStore();
+  const initialized = useAuthStore((state) => state.initialized);
+  const { requireAuth } = useGuestActions();
   const navigate = useNavigate();
 
   // Glow effect mouse tracking
@@ -33,6 +37,11 @@ export default function MyCutsPage() {
   }, []);
 
   useEffect(() => {
+    if (!initialized) return;
+    if (!user) {
+      requireAuth();
+      return;
+    }
     getMyCuts()
       .then((res) => setCuts(res.data.cuts || []))
       .catch((error) => {
@@ -40,13 +49,14 @@ export default function MyCutsPage() {
         setCuts([]);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [initialized, user, requireAuth]);
 
   const handlePlayCut = (cut) => {
     navigate(`/watch/${cut.video._id}?start=${cut.startSeconds}&end=${cut.endSeconds}`);
   };
 
   const handleDelete = async (cutId) => {
+    if (!requireAuth()) return;
     try {
       await deleteCut(cutId);
       setCuts((prev) => prev.filter((c) => c._id !== cutId));
@@ -57,7 +67,7 @@ export default function MyCutsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white p-10 flex gap-10">
+      <div className="sf-screen sf-collection-screen sf-cuts-screen min-h-screen bg-black text-white p-10 flex gap-10">
         <div className="w-[380px] shrink-0 space-y-5">
           <Skeleton className="h-48 w-full rounded-xl" />
           <Skeleton className="h-7 w-2/3" />
@@ -74,22 +84,21 @@ export default function MyCutsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-10 flex gap-10 relative overflow-hidden">
+    <div className="sf-screen sf-collection-screen sf-cuts-screen min-h-screen bg-black text-white p-10 flex gap-10 relative overflow-hidden">
 
       {/* ========= GLOW BACKGROUND ========= */}
       <BackgroundGlow mouse={mouse} />
 
       {/* ========= LEFT FIXED PANEL ========= */}
-      <div className="w-[380px] rounded-3xl p-6 bg-gradient-to-b from-[#1c2333] to-black border border-white/10 shadow-2xl sticky top-8 h-fit z-10">
+      <div className="sf-library-hero w-[380px] rounded-3xl p-6 bg-gradient-to-b from-[#1c2333] to-black border border-white/10 shadow-2xl sticky top-8 h-fit z-10">
 
         {/* Thumbnail Preview */}
         <div className="w-full h-48 rounded-xl overflow-hidden mb-6 shadow-lg">
-          <img
-            src={
-              cuts[0]?.video?.thumbnailUrl ||
-              "https://i.ytimg.com/img/no_thumbnail.jpg"
-            }
+          <MediaThumbnail
+            src={cuts[0]?.video?.thumbnailUrl}
+            title={cuts[0]?.video?.title || "Your video cuts"}
             className="w-full h-full object-cover"
+            loading="eager"
           />
         </div>
 
@@ -124,9 +133,23 @@ export default function MyCutsPage() {
       </div>
 
       {/* ========= RIGHT SCROLLABLE LIST ========= */}
-      <div className="flex-1 max-h-[calc(100vh-40px)] overflow-y-auto pr-4 relative z-10">
+      <div className="sf-library-list flex-1 max-h-[calc(100vh-40px)] overflow-y-auto pr-4 relative z-10">
+
+        <div className="sf-cuts-list-heading">
+          <div>
+            <span>YOUR COLLECTION</span>
+            <h3>Saved moments</h3>
+          </div>
+          <span className="sf-cuts-total">{cuts.length} {cuts.length === 1 ? "cut" : "cuts"}</span>
+        </div>
 
         <div className="space-y-6">
+          {cuts.length === 0 && (
+            <div className="sf-library-empty">
+              <h2>No cuts yet</h2>
+              <p>Saved video moments will appear here.</p>
+            </div>
+          )}
           {cuts.map((cut, index) => (
             <CutRow key={cut._id} index={index + 1} cut={cut} onPlay={handlePlayCut} onDelete={handleDelete} />
           ))}
@@ -175,7 +198,7 @@ function CutRow({ cut, index, onPlay, onDelete }) {
     <div
       onPointerEnter={loadAmbientColor}
       style={{ "--sf-card-ambient": ambientColor }}
-      className="sf-ambient-card flex gap-4 group p-3 rounded-xl transition"
+      className="sf-ambient-card sf-library-row flex gap-4 group p-3 rounded-xl transition"
     >
       {/* index number */}
       <div className="text-gray-500 w-6 text-right group-hover:text-white">
@@ -184,8 +207,9 @@ function CutRow({ cut, index, onPlay, onDelete }) {
 
       {/* thumbnail */}
       <div className="sf-ambient-thumb relative w-48 h-28 rounded-xl overflow-hidden cursor-pointer" onClick={() => onPlay(cut)}>
-        <img
+        <MediaThumbnail
           src={cut.video?.thumbnailUrl}
+          title={cut.video?.title || cut.title || "Video cut"}
           className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
         />
         <span className="absolute bottom-1 right-1 bg-black/80 px-2 py-1 text-xs rounded">

@@ -3,6 +3,8 @@ import { uploadVideo } from "../api/videoApi";
 import { useAuthStore } from "../store/authStore";
 import Button from "../components/common/Button";
 import Spinner from "../components/common/Spinner";
+import { Link } from "react-router-dom";
+import { FiArrowLeft } from "react-icons/fi";
 
 export default function UploadPage() {
   const { user } = useAuthStore();
@@ -81,7 +83,8 @@ export default function UploadPage() {
 
   if (!user)
     return (
-      <div className="sf-upload-page sf-upload-auth-page">
+      <div className="sf-upload-page sf-upload-auth-page sf-screen sf-upload-screen">
+        <Link to="/" className="sf-upload-back"><FiArrowLeft aria-hidden="true" /> Back to Streamify</Link>
         <div className="sf-upload-auth-message" role="status">
           Please log in to upload videos.
         </div>
@@ -89,7 +92,7 @@ export default function UploadPage() {
     );
 
   return (
-    <main className="sf-upload-page relative min-h-screen px-4 py-10 overflow-hidden">
+    <main className="sf-upload-page sf-screen sf-upload-screen relative min-h-screen px-4 py-10 overflow-hidden">
 
       {/* Background Glow Blobs */}
       <div className="absolute inset-0 pointer-events-none">
@@ -105,6 +108,7 @@ export default function UploadPage() {
 
       {/* Main Upload Modal */}
       <div className="sf-upload-content relative z-10">
+        <Link to="/" className="sf-upload-back"><FiArrowLeft aria-hidden="true" /> Back to Streamify</Link>
         <header className="sf-upload-heading">
           <p className="sf-upload-eyebrow">CREATOR STUDIO</p>
           <h1 className="sf-upload-title">Upload a video</h1>

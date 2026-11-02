@@ -20,7 +20,7 @@ export default function LibraryPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0f0f23] via-[#1a1a2e] to-[#16213e] text-white flex items-center justify-center">
+      <div className="sf-screen sf-library-screen min-h-screen bg-gradient-to-br from-[#0f0f23] via-[#1a1a2e] to-[#16213e] text-white flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">🔒</div>
           <h2 className="text-2xl font-bold mb-2">Sign in to access your library</h2>
@@ -33,7 +33,7 @@ export default function LibraryPage() {
   const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f0f23] via-[#1a1a2e] to-[#16213e] text-white">
+    <div className="sf-screen sf-library-screen min-h-screen bg-gradient-to-br from-[#0f0f23] via-[#1a1a2e] to-[#16213e] text-white">
       <div className="p-6">
         {/* Header */}
         <div className="mb-8 animate-fade-in">

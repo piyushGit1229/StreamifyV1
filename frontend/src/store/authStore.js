@@ -8,11 +8,15 @@ export const useAuthStore = create((set) => ({
   user: null,
   accessToken: localStorage.getItem("accessToken") || null,
   loading: false,
+  initialized: false,
 
   // Called on refresh
   initializeUser: async () => {
     const token = localStorage.getItem("accessToken");
-    if (!token) return; // no token → no auto login
+    if (!token) {
+      set({ initialized: true });
+      return;
+    }
 
     try {
       const res = await getProfileApi();
@@ -22,6 +26,8 @@ export const useAuthStore = create((set) => ({
     } catch {
       set({ user: null, accessToken: null });
       localStorage.removeItem("accessToken");
+    } finally {
+      set({ initialized: true });
     }
   },
 
@@ -37,6 +43,7 @@ export const useAuthStore = create((set) => ({
       set({
         user: res.data.user,
         accessToken: res.data.accessToken,
+        initialized: true,
       });
 
       // Fetch library data after login
@@ -97,6 +104,7 @@ export const useAuthStore = create((set) => ({
     set({
       user: null,
       accessToken: null,
+      initialized: true,
     });
 
     toast.success("Account created! Please log in.");

@@ -1,75 +1,62 @@
-import React, { useEffect } from "react";
+import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import App from "./App.jsx";
+import AppInitializer from "./AppInitializer.jsx";
 import "./index.css";
 import { Toaster } from "react-hot-toast";
-import { useAuthStore } from "./store/authStore";
-
-function Init() {
-  const initializeUser = useAuthStore((s) => s.initializeUser);
-
-  useEffect(() => {
-    initializeUser();
-  }, []);
-
-  return <App />;
-}
 
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
-      <Init />
+      <AppInitializer />
       <Toaster
         position="top-right"
-        gutter={12}
+        gutter={8}
         toastOptions={{
-          duration: 4000,
+          duration: 1000,
           style: {
-            background: "linear-gradient(135deg, #1a1a1f 0%, #2a2a32 100%)",
+            background: "#131827",
             color: "white",
-            padding: "16px 20px",
-            borderRadius: "12px",
-            fontSize: "14px",
-            fontWeight: "500",
-            border: "1px solid rgba(59, 130, 246, 0.2)",
-            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)",
-            backdropFilter: "blur(10px)",
+            padding: "11px 15px",
+            borderRadius: "10px",
+            fontSize: "13px",
+            fontWeight: "550",
+            border: "1px solid rgba(190, 199, 218, 0.14)",
+            boxShadow: "0 14px 36px rgba(0, 0, 0, 0.34)",
           },
           success: {
+            duration: 1000,
             style: {
-              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-              border: "1px solid rgba(16, 185, 129, 0.3)",
-              color: "white",
+              background: "#131827",
+              border: "1px solid rgba(125, 136, 255, 0.32)",
             },
             iconTheme: {
-              primary: "#ffffff",
-              secondary: "#10b981",
+              primary: "#c9ccff",
+              secondary: "#5865f2",
             },
           },
           error: {
+            duration: 2500,
             style: {
-              background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-              border: "1px solid rgba(239, 68, 68, 0.3)",
-              color: "white",
+              background: "#131827",
+              border: "1px solid rgba(244, 114, 132, 0.3)",
             },
             iconTheme: {
-              primary: "#ffffff",
-              secondary: "#ef4444",
+              primary: "#ffe0e4",
+              secondary: "#ef7184",
             },
           },
           loading: {
             style: {
-              background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
-              border: "1px solid rgba(59, 130, 246, 0.3)",
-              color: "white",
+              background: "#131827",
+              border: "1px solid rgba(56, 189, 248, 0.25)",
             },
           },
         }}
         containerStyle={{
-          top: 20,
-          right: 20,
+          top: 14,
+          right: 14,
         }}
       />
     </BrowserRouter>

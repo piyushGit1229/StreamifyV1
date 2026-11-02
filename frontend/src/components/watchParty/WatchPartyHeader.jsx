@@ -4,6 +4,7 @@ import { FiLogOut, FiShare2, FiClipboard, FiCheck } from "react-icons/fi";
 import { useAuthStore } from "../../store/authStore";
 import { watchpartySocket } from "../../sockets/watchparty.socket";
 import toast from "react-hot-toast";
+import UserAvatar from "../common/UserAvatar";
 
 function WatchPartyHeader({ room }) {
   const navigate = useNavigate();
@@ -155,10 +156,7 @@ function WatchPartyHeader({ room }) {
               "
               style={{ zIndex: 10 - i }}
             >
-              <img
-                src={p.avatar || "https://i.pravatar.cc/40"}
-                className="w-full h-full object-cover"
-              />
+              <UserAvatar src={p.avatar} name={p.username} className="w-full h-full object-cover" />
               <span
                 className={`
                   absolute bottom-0 right-0 w-3 h-3 rounded-full border border-white

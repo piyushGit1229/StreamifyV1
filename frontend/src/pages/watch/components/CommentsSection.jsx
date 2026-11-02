@@ -3,6 +3,7 @@ import { createComment } from "../../../api/commentApi";
 import CommentItem from "./CommentItem";
 import CommentAvatar from "./Common/CommentAvatar";
 import LoadingSpinner from "./Common/LoadingSpinner";
+import { useGuestActions } from "../../../components/common/guestActionContext";
 
 export default function CommentsSection({
   videoId,
@@ -18,8 +19,10 @@ export default function CommentsSection({
 }) {
   const [commentText, setCommentText] = useState("");
   const [loading, setLoading] = useState(false);
+  const { requireAuth } = useGuestActions();
 
   async function handleSubmitComment() {
+    if (!requireAuth()) return;
     if (!commentText.trim() || loading) return;
 
     setLoading(true);
@@ -35,7 +38,7 @@ export default function CommentsSection({
   }
 
   return (
-    <div className="
+    <div className="sf-watch-comments
       p-6 rounded-2xl bg-[#0f0f15]/80 
       backdrop-blur-xl border border-white/10 
       shadow-[0_0_40px_rgba(0,0,0,0.4)]
@@ -102,9 +105,9 @@ export default function CommentsSection({
           </div>
         </div>
       ) : (
-        <p className="text-gray-400 text-center pb-6 border-b border-white/10 mb-8">
-          Sign in to add a comment.
-        </p>
+        <button type="button" onClick={requireAuth} className="sf-guest-comment-prompt">
+          Sign in to join the conversation <span>Comments are open to everyone.</span>
+        </button>
       )}
 
       {/* COMMENT LIST */}

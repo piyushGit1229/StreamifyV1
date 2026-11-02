@@ -316,7 +316,7 @@ export default function CustomVideoPlayer({
   return (
     <div
       ref={wrapperRef}
-      className="relative group rounded-xl overflow-hidden"
+      className="sf-player-surface relative group rounded-xl overflow-hidden"
       onMouseMove={() => setShowControls(true)}
       onClick={togglePlay}
     >
@@ -351,7 +351,7 @@ export default function CustomVideoPlayer({
 
       {/* CONTROLS */}
       <div
-        className={`absolute bottom-4 left-0 right-0 z-30 transition-all duration-300 ${
+        className={`sf-player-controls absolute bottom-4 left-0 right-0 z-30 transition-all duration-300 ${
           showControls ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
@@ -364,13 +364,13 @@ export default function CustomVideoPlayer({
             max={endSeconds ?? duration}
             value={current}
             onChange={handleSeek}
-            className="w-full h-1.5 cursor-pointer rounded-full accent-blue-500"
+            className="sf-player-seek w-full h-1.5 cursor-pointer rounded-full"
           />
 
           {/* Bottom Row */}
-          <div className="flex items-center justify-between">
+          <div className="sf-player-controls-row flex items-center justify-between">
 
-            <div className="flex items-center gap-4">
+            <div className="sf-player-control-group flex items-center gap-4">
 
               {/* -10 */}
               <button
@@ -451,7 +451,7 @@ export default function CustomVideoPlayer({
                       onClick={() => changeSpeed(rate)}
                       className={`px-3 py-1 rounded-lg text-left transition ${
                         playbackRate === rate
-                          ? "bg-blue-500 text-white"
+                          ? "sf-player-speed-active text-white"
                           : "hover:bg-white/10 text-white"
                       }`}
                     >

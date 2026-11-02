@@ -1,8 +1,10 @@
 import { format } from "date-fns";
 import { useState } from "react";
 import CommentAvatar from "./Common/CommentAvatar";
+import { useGuestActions } from "../../../components/common/guestActionContext";
 
 export default function ReplyItem({ reply, onReply, isReplyFormVisible, setReplyFormVisibility, user }) {
+  const { requireAuth } = useGuestActions();
   return (
     <div className="flex gap-3">
       <CommentAvatar user={reply.userId} size="w-7 h-7" />
@@ -19,16 +21,17 @@ export default function ReplyItem({ reply, onReply, isReplyFormVisible, setReply
           {reply.content}
         </p>
         <div className="flex items-center gap-4 mt-1">
-          {user && (
-            <button
-              onClick={() => setReplyFormVisibility(prev => ({ ...prev, [reply._id]: !prev[reply._id] }))}
-              className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
-            >
-              Reply
-            </button>
-          )}
+          <button
+            onClick={() => {
+              if (!requireAuth()) return;
+              setReplyFormVisibility(prev => ({ ...prev, [reply._id]: !prev[reply._id] }));
+            }}
+            className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+          >
+            Reply
+          </button>
         </div>
-        {isReplyFormVisible && (
+        {isReplyFormVisible && user && (
           <ReplyForm
             replyId={reply._id}
             onReply={onReply}

@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../../store/authStore";
 import { createWatchParty, joinWatchParty } from "../../api/watchPartyApi";
 import { FiUsers, FiPlusCircle, FiLogIn, FiX } from "react-icons/fi";
+import { useGuestActions } from "../common/guestActionContext";
 
 export default function WatchPartyButton({ videoId }) {
-  const { user } = useAuthStore();
   const navigate = useNavigate();
+  const { requireAuth } = useGuestActions();
 
   const [showDropdown, setShowDropdown] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
@@ -32,7 +32,7 @@ export default function WatchPartyButton({ videoId }) {
   // CREATE WATCH PARTY
   // ----------------------------
   const handleCreateParty = async () => {
-    if (!user) return;
+    if (!requireAuth()) return;
     setLoading(true);
     try {
       const response = await createWatchParty({ videoId });
@@ -51,11 +51,13 @@ export default function WatchPartyButton({ videoId }) {
   // JOIN PARTY
   // ----------------------------
   const handleJoinParty = () => {
+    if (!requireAuth()) return;
     setShowDropdown(false);
     setShowJoinModal(true);
   };
 
   const handleJoinViaCode = async () => {
+    if (!requireAuth()) return;
     if (!roomCode.trim()) return;
     setLoading(true);
     try {
@@ -72,8 +74,6 @@ export default function WatchPartyButton({ videoId }) {
     }
   };
 
-  if (!user) return null;
-
   // ----------------------------
   // UI
   // ----------------------------
@@ -82,7 +82,10 @@ export default function WatchPartyButton({ videoId }) {
       <div className="relative select-none" ref={dropdownRef}>
         {/* MAIN BUTTON */}
         <button
-          onClick={() => setShowDropdown(!showDropdown)}
+          onClick={() => {
+            if (!requireAuth()) return;
+            setShowDropdown(!showDropdown);
+          }}
           className="
             px-4 py-2.5 rounded-full text-sm font-medium
             flex items-center gap-2

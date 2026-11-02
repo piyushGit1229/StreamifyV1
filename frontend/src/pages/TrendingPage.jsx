@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import { getHomeFeed } from "../api/feedApi";
+import { getPublicTrendingVideos } from "../api/videoApi";
+import { useAuthStore } from "../store/authStore";
 import Skeleton from "../components/common/Skeleton";
 import AmbientVideoLink from "../components/video/AmbientVideoLink";
 import useAmbientCardColor from "../components/video/useAmbientCardColor";
+import MediaThumbnail from "../components/common/MediaThumbnail";
 
 export default function TrendingPage() {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Mouse tracking for parallax effect
+  const user = useAuthStore((state) => state.user);
+  const initialized = useAuthStore((state) => state.initialized);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
   const { ambientColor, loadAmbientColor } = useAmbientCardColor(videos[0]?.thumbnailUrl);
 
@@ -24,50 +27,27 @@ export default function TrendingPage() {
   }, []);
 
   useEffect(() => {
-    getHomeFeed()
-      .then((res) => {
-        const { trending } = res.data;
-        setVideos(trending || []);
-      })
+    if (!initialized) return;
+
+    const loadTrending = user ? getHomeFeed().then((res) => res.data?.trending || [])
+      : getPublicTrendingVideos().then((res) => res.data?.videos || []);
+
+    loadTrending
+      .then(setVideos)
       .catch(() => setVideos([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [initialized, user]);
 
   if (loading) {
     return (
-      <div className="relative min-h-screen bg-[#0f0f12] text-white p-8 overflow-hidden">
-
-        {/* BACKGROUND GLOW EFFECT — SAME AS UPLOAD PAGE */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div
-            className="absolute w-[450px] h-[450px] bg-[#2563eb]/25 blur-3xl rounded-full animate-pulse"
-            style={{
-              top: "20%",
-              left: "10%",
-              transform: `translate(${mouse.x * 0.5}px, ${mouse.y * 0.5}px)`
-            }}
-          />
-
-          <div
-            className="absolute w-[350px] h-[350px] bg-[#3b82f6]/20 blur-3xl rounded-full animate-pulse"
-            style={{
-              bottom: "15%",
-              right: "15%",
-              transform: `translate(${mouse.x * -0.4}px, ${mouse.y * -0.4}px)`
-            }}
-          />
-        </div>
-
-        <div className="relative z-10">
-          <Skeleton className="h-10 w-64 mb-5" />
-          <Skeleton className="h-5 w-96 max-w-full mb-12" />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            <div className="space-y-6">
-              {Array.from({ length: 5 }, (_, index) => (
-                <Skeleton key={index} variant="row" />
-              ))}
-            </div>
-            <Skeleton className="h-[600px] w-full rounded-3xl" />
+      <div className="sf-screen sf-trending-screen">
+        <header className="sf-page-heading-row sf-discovery-heading">
+          <div><span className="sf-eyebrow">WHAT'S MOVING</span><Skeleton className="h-10 w-64 mt-3" /><Skeleton className="h-5 w-80 max-w-full mt-3" /></div>
+        </header>
+        <div className="sf-trending-layout">
+          <Skeleton className="w-full aspect-video rounded-2xl" />
+          <div className="sf-trending-list">
+            {Array.from({ length: 5 }, (_, index) => <Skeleton key={index} variant="row" />)}
           </div>
         </div>
       </div>
@@ -76,31 +56,14 @@ export default function TrendingPage() {
 
   if (!videos.length) {
     return (
-      <div className="relative min-h-screen bg-[#0f0f12] text-white flex items-center justify-center overflow-hidden">
-
-        {/* BACKGROUND EFFECT */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div
-            className="absolute w-[400px] h-[400px] bg-[#2563eb]/20 blur-3xl rounded-full animate-pulse"
-            style={{
-              top: "22%",
-              left: "12%",
-              transform: `translate(${mouse.x * 0.4}px, ${mouse.y * 0.4}px)`
-            }}
-          />
-          <div
-            className="absolute w-[320px] h-[320px] bg-[#3b82f6]/20 blur-3xl rounded-full animate-pulse"
-            style={{
-              bottom: "12%",
-              right: "18%",
-              transform: `translate(${mouse.x * -0.4}px, ${mouse.y * -0.4}px)`
-            }}
-          />
-        </div>
-
-        <div className="text-center relative z-10">
-          <h2 className="text-3xl font-semibold">No trending videos yet</h2>
-          <p className="text-gray-400 mt-2">Check back later</p>
+      <div className="sf-screen sf-trending-screen">
+        <header className="sf-page-heading-row sf-discovery-heading">
+          <div><span className="sf-eyebrow">WHAT'S MOVING</span><h1 className="sf-page-title">Trending now</h1></div>
+        </header>
+        <div className="sf-empty-state sf-empty-panel">
+          <span className="sf-empty-mark" aria-hidden="true">↗</span>
+          <h2>No trending videos yet</h2>
+          <p>Check back later for videos gaining attention.</p>
         </div>
       </div>
     );
@@ -109,141 +72,57 @@ export default function TrendingPage() {
   const featured = videos[0];
 
   return (
-    <div className="relative min-h-screen bg-[#0f0f12] text-white p-10 overflow-hidden">
+    <div
+      className="sf-screen sf-trending-screen"
+      style={{ "--sf-pointer-x": `${mouse.x}px`, "--sf-pointer-y": `${mouse.y}px` }}
+    >
+      <header className="sf-page-heading-row sf-discovery-heading">
+        <div>
+          <span className="sf-eyebrow">WHAT'S MOVING</span>
+          <h1 className="sf-page-title">Trending now</h1>
+          <p>The videos finding an audience across Streamify.</p>
+        </div>
+      </header>
 
-      {/* --- BLUE GLOW BACKGROUND (UPLOAD PAGE STYLE) --- */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="sf-trending-layout">
         <div
-          className="absolute w-[500px] h-[500px] bg-[#2563eb]/25 blur-3xl rounded-full animate-pulse"
-          style={{
-            top: "18%",
-            left: "10%",
-            transform: `translate(${mouse.x * 0.4}px, ${mouse.y * 0.4}px)`
-          }}
-        />
-        <div
-          className="absolute w-[380px] h-[380px] bg-[#3b82f6]/25 blur-3xl rounded-full animate-pulse"
-          style={{
-            bottom: "10%",
-            right: "18%",
-            transform: `translate(${mouse.x * -0.4}px, ${mouse.y * -0.4}px)`
-          }}
-        />
-      </div>
-
-      {/* === CONTENT START === */}
-      <div className="relative z-10">
-
-        {/* HEADER */}
-        <div className="mb-12">
-          <span className="text-sm uppercase font-semibold bg-red-500/20 text-red-400 px-3 py-1 rounded-full">
-            Worldwide
-          </span>
-
-          <h1 className="text-5xl font-extrabold mt-4 tracking-tight">
-            Trending Videos
-          </h1>
-
-          <p className="text-gray-400 mt-2 text-lg">
-            The most popular videos gaining attention right now.
-          </p>
+          onPointerEnter={loadAmbientColor}
+          className="sf-trending-feature"
+          style={{ "--sf-card-ambient": ambientColor }}
+        >
+          <MediaThumbnail src={featured.thumbnailUrl} alt={featured.title} title={featured.title} loading="lazy" />
+          <span className="sf-feature-kicker">FEATURED TREND</span>
+          <div className="sf-trending-feature-copy">
+            <span className="sf-feature-rank">#1 today</span>
+            <h2>{featured.title}</h2>
+            <p>{featured.owner?.name}</p>
+          </div>
         </div>
 
-        {/* MAIN GRID */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-
-          {/* LEFT LIST */}
-          <div className="space-y-10">
+        <div className="sf-trending-list">
+          <div className="sf-section-heading">
+            <div><span className="sf-eyebrow">POPULAR RIGHT NOW</span><h2>Top videos</h2></div>
+          </div>
+          <div className="sf-trending-items">
             {videos.map((video, index) => (
               <AmbientVideoLink
                 to={`/watch/${video._id}`}
                 video={video}
                 key={video._id}
-                className="
-                  flex items-center gap-6 group p-3 rounded-xl
-                  hover:bg-white/5 transition
-                  hover:backdrop-blur-xl
-                  hover:shadow-[0_8px_40px_rgba(255,255,255,0.08)]
-                  transform hover:-translate-y-1 hover:scale-[1.02]
-                "
+                className="sf-trending-item"
               >
-                <div className="text-4xl font-bold text-gray-600 group-hover:text-blue-400 transition">
-                  {index + 1}
+                <span className="sf-trending-rank">{String(index + 1).padStart(2, "0")}</span>
+                <div className="sf-trending-thumb">
+                  <MediaThumbnail src={video.thumbnailUrl} alt={video.title} title={video.title} loading="lazy" />
                 </div>
-
-                <div className="sf-ambient-thumb
-                    w-40 h-24 overflow-hidden rounded-lg 
-                    transition transform group-hover:scale-110
-                    group-hover:shadow-[0_10px_25px_rgba(0,0,0,0.6)]
-                ">
-                  <img
-                    src={video.thumbnailUrl}
-                    className="w-full h-full object-cover"
-                    alt={video.title}
-                  />
-                </div>
-
-                <div>
-                  <h3 className="
-                    text-xl font-semibold transition 
-                    group-hover:text-white line-clamp-1
-                  ">
-                    {video.title}
-                  </h3>
-
-                  <p className="text-sm text-gray-400 line-clamp-1">
-                    {video.owner?.name}
-                  </p>
-
-                  <p className="text-xs text-gray-500 mt-1">
-                    {video.views} views • {new Date(video.createdAt).toLocaleDateString()}
-                  </p>
+                <div className="sf-trending-copy">
+                  <h3>{video.title}</h3>
+                  <p>{video.owner?.name}</p>
+                  <span>{video.views} views · {new Date(video.createdAt).toLocaleDateString()}</span>
                 </div>
               </AmbientVideoLink>
             ))}
           </div>
-
-          {/* FEATURED VIDEO */}
-          <div
-            onPointerEnter={loadAmbientColor}
-            className="
-              sf-ambient-card
-              relative rounded-3xl overflow-hidden 
-              shadow-[0_15px_70px_rgba(0,0,0,0.7)] 
-              border border-white/10
-              transform transition 
-              hover:scale-[1.03] hover:-translate-y-2
-              hover:shadow-[0_25px_90px_rgba(0,0,0,0.9)]
-              hover:rotate-[0.8deg]
-            "
-            style={{
-              "--sf-card-ambient": ambientColor,
-              perspective: "1000px",
-              transform: `rotateX(${mouse.y * 0.02}deg) rotateY(${mouse.x * 0.02}deg)`
-            }}
-          >
-            <img
-              src={featured.thumbnailUrl}
-              className="
-                w-full h-[600px] object-cover opacity-90 
-                transition-transform duration-500
-                hover:scale-110 hover:rotate-[1deg]
-              "
-              alt={featured.title}
-            />
-
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20"></div>
-
-            <div className="absolute bottom-10 left-10">
-              <h2 className="text-4xl font-extrabold drop-shadow-2xl">
-                #{1} — {featured.title}
-              </h2>
-              <p className="text-gray-300 mt-2 text-lg">
-                {featured.owner?.name}
-              </p>
-            </div>
-          </div>
-
         </div>
       </div>
     </div>

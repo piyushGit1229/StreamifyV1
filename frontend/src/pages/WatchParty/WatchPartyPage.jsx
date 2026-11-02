@@ -48,7 +48,7 @@ export default function WatchPartyPage() {
   // =====================================================
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#050505] text-white flex flex-col">
+      <div className="sf-party-screen min-h-screen bg-[#050505] text-white flex flex-col">
         <div className="h-16 px-6 border-b border-white/5 flex items-center justify-between">
           <Skeleton className="h-6 w-40" />
           <Skeleton className="h-9 w-32 rounded-full" />
@@ -79,7 +79,7 @@ export default function WatchPartyPage() {
   // =====================================================
   if (error || !room) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center">
+      <div className="sf-party-screen min-h-screen bg-black text-white flex flex-col items-center justify-center">
         <h1 className="text-2xl font-bold mb-4">Watch Party Not Found</h1>
         <p className="text-gray-400 mb-6">{error}</p>
         <button
@@ -97,7 +97,7 @@ export default function WatchPartyPage() {
   // =====================================================
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex flex-col">
+    <div className="sf-party-screen min-h-screen bg-[#050505] text-white flex flex-col">
 
       {/* HEADER */}
       <WatchPartyHeader room={room} />

@@ -3,10 +3,10 @@ import { format } from "date-fns";
 
 export default function VideoMetadata({ video, user, onLike, onDislike }) {
   return (
-    <div className="bg-[#111118] rounded-2xl p-6 border border-white/5">
+    <div className="sf-watch-metadata bg-[#111118] rounded-2xl p-6 border border-white/5">
       <h1 className="text-white text-2xl font-bold mb-2">{video.title}</h1>
 
-      <div className="flex items-center justify-between">
+      <div className="sf-watch-metadata-row flex items-center justify-between">
         <div className="text-gray-400 text-sm flex gap-2">
           <span>{video.views?.toLocaleString()} views</span>
           <span>•</span>

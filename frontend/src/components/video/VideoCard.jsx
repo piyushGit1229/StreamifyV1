@@ -1,5 +1,9 @@
 import { Link } from "react-router-dom";
+import { FiPlay } from "react-icons/fi";
 import useAmbientCardColor from "./useAmbientCardColor";
+import UserAvatar from "../common/UserAvatar";
+import MediaThumbnail from "../common/MediaThumbnail";
+import { cachePublicVideo } from "../../api/publicVideoCache";
 
 export default function VideoCard({ video }) {
   const { ambientColor, loadAmbientColor } = useAmbientCardColor(video.thumbnailUrl);
@@ -7,127 +11,25 @@ export default function VideoCard({ video }) {
   return (
     <Link
       to={`/watch/${video._id}`}
+      state={{ video }}
+      onClick={() => cachePublicVideo(video)}
       onPointerEnter={loadAmbientColor}
       onFocus={loadAmbientColor}
       style={{ "--sf-card-ambient": ambientColor }}
-      className="
-        sf-video-card sf-ambient-card group 
-        block 
-        cursor-pointer 
-        w-full 
-        transition-all 
-        duration-300
-        rounded-xl
-        p-2
-      "
+      className="sf-video-card group"
     >
-      {/* MAIN GLASS CONTAINER */}
-      <div
-        className="
-          sf-ambient-content
-          rounded-xl
-          bg-white/[0.06]
-          backdrop-blur-xl
-          border border-white/10
-          shadow-[0_8px_24px_rgba(0,0,0,0.45)]
-          transition-all duration-300
-          overflow-hidden
+      <div className="sf-video-thumb">
+        <MediaThumbnail src={video.thumbnailUrl} alt={video.title} title={video.title} loading="lazy" />
+        <span className="sf-video-duration">{formatDuration(video.duration)}</span>
+        <span className="sf-video-play" aria-hidden="true"><FiPlay size={18} fill="currentColor" /></span>
+      </div>
 
-          group-hover:bg-white/[0.10]
-          group-hover:border-white/20
-          group-hover:shadow-[0_12px_36px_rgba(0,0,0,0.65)]
-        "
-      >
-        {/* THUMBNAIL */}
-        <div
-          className="sf-video-thumb sf-ambient-thumb
-            relative 
-            w-full 
-            aspect-video 
-            overflow-hidden
-          "
-        >
-          <img
-            src={video.thumbnailUrl}
-            alt={video.title}
-            className="
-              w-full 
-              h-full 
-              object-cover
-              transition-all 
-              duration-500
-              group-hover:scale-[1.06]
-              group-hover:brightness-90
-            "
-          />
-
-          {/* DURATION BADGE */}
-          <span
-            className="
-              absolute 
-              bottom-2 
-              right-2 
-              bg-black/75 
-              backdrop-blur-md
-              text-white 
-              text-xs 
-              px-2.5 
-              py-1 
-              rounded-md 
-              font-semibold
-              shadow-md
-            "
-          >
-            {formatDuration(video.duration)}
-          </span>
-        </div>
-
-        {/* VIDEO INFO */}
-        <div className="sf-video-info flex gap-3 mt-3 p-3 pb-4">
-
-          {/* CHANNEL AVATAR */}
-          <img
-            src={
-              video.owner?.avatar ||
-              "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg"
-            }
-            className="
-                w-10 h-10 shrink-0
-              rounded-full 
-              object-cover
-              border border-white/20
-              shadow-sm
-            "
-          />
-
-          {/* TEXT SECTION */}
-          <div className="flex flex-col min-w-0">
-
-            {/* TITLE */}
-            <p
-              className="
-                text-[15px] 
-                text-white 
-                font-semibold 
-                leading-tight 
-                line-clamp-2
-                transition-colors duration-300
-                group-hover:text-blue-300
-              "
-            >
-              {video.title}
-            </p>
-
-            {/* CHANNEL NAME */}
-            <p className="text-sm text-gray-300 mt-1 line-clamp-1">
-              {video.owner?.name}
-            </p>
-
-            {/* VIEWS + TIME */}
-            <p className="text-sm text-gray-400 line-clamp-1">
-              {video.views || 0} views • {timeAgo(video.createdAt)}
-            </p>
-          </div>
+      <div className="sf-video-info">
+        <UserAvatar src={video.owner?.avatar} name={video.owner?.name || "Creator"} alt="" className="sf-video-avatar" />
+        <div className="sf-video-copy">
+          <p className="sf-video-title">{video.title}</p>
+          <p className="sf-video-channel">{video.owner?.name}</p>
+          <p className="sf-video-meta">{video.views || 0} views <span aria-hidden="true">·</span> {timeAgo(video.createdAt)}</p>
         </div>
       </div>
     </Link>

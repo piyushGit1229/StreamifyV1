@@ -8,10 +8,13 @@ import {
 import { FiMoreHorizontal } from "react-icons/fi";
 import useAmbientCardColor from "../../components/video/useAmbientCardColor";
 import Skeleton from "../../components/common/Skeleton";
+import MediaThumbnail from "../../components/common/MediaThumbnail";
+import { useGuestActions } from "../../components/common/guestActionContext";
 
 export default function PlaylistDetailPage() {
   const { id } = useParams();
   const [playlist, setPlaylist] = useState(null);
+  const { requireAuth } = useGuestActions();
 
   // Glow Effect
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
@@ -33,7 +36,7 @@ export default function PlaylistDetailPage() {
 
   if (!playlist)
     return (
-      <div className="min-h-screen bg-black text-white p-10 flex gap-10">
+      <div className="sf-screen sf-collection-screen sf-playlist-detail-screen min-h-screen bg-black text-white p-10 flex gap-10">
         <div className="w-[380px] shrink-0 space-y-5">
           <Skeleton className="h-48 w-full rounded-xl" />
           <Skeleton className="h-7 w-2/3" />
@@ -49,6 +52,7 @@ export default function PlaylistDetailPage() {
     );
 
   const handleRemove = async (vid) => {
+    if (!requireAuth()) return;
     await removeVideoFromPlaylist(id, vid);
     setPlaylist((prev) => ({
       ...prev,
@@ -57,12 +61,13 @@ export default function PlaylistDetailPage() {
   };
 
   const handleDeletePlaylist = async () => {
+    if (!requireAuth()) return;
     await deletePlaylist(id);
     window.location.href = "/library/playlists";
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-10 flex gap-10 relative overflow-hidden">
+    <div className="sf-screen sf-collection-screen sf-playlist-detail-screen min-h-screen bg-black text-white p-10 flex gap-10 relative overflow-hidden">
 
       {/* BACKGROUND GLOW */}
       <BackgroundGlow mouse={mouse} />
@@ -72,13 +77,11 @@ export default function PlaylistDetailPage() {
 
         {/* Thumbnail */}
         <div className="w-full h-48 rounded-xl overflow-hidden mb-6 shadow-lg">
-          <img
-            src={
-              playlist.thumbnail ||
-              playlist.videos?.[0]?.thumbnailUrl ||
-              "https://i.ytimg.com/img/no_thumbnail.jpg"
-            }
+          <MediaThumbnail
+            src={playlist.thumbnail || playlist.videos?.[0]?.thumbnailUrl}
+            title={playlist.name}
             className="w-full h-full object-cover"
+            loading="eager"
           />
         </div>
 
@@ -166,8 +169,9 @@ function PlaylistVideoRow({ video, index, onRemove }) {
         to={`/watch/${video._id}`}
         className="sf-ambient-thumb relative w-48 h-28 rounded-xl overflow-hidden"
       >
-        <img
+        <MediaThumbnail
           src={video.thumbnailUrl}
+          title={video.title}
           className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
         />
 

@@ -3,109 +3,80 @@ import {
   FiHome,
   FiCompass,
   FiTrendingUp,
-  FiClock,
   FiList,
   FiHeart,
-  FiUpload
+  FiUsers,
+  FiScissors,
+  FiUpload,
+  FiPlay,
 } from "react-icons/fi";
-
 import { useAuthStore } from "../../store/authStore";
 import { useLibraryStore } from "../../store/libraryStore";
+import UserAvatar from "../common/UserAvatar";
+import { useGuestActions } from "../common/guestActionContext";
 
 export default function Sidebar() {
   const { pathname } = useLocation();
   const user = useAuthStore((s) => s.user);
   const { watchLaterCount, playlistsCount } = useLibraryStore();
+  const { requireAuth } = useGuestActions();
+  const requireSignInForRoute = (event) => {
+    if (!requireAuth()) event.preventDefault();
+  };
 
   const itemClass = (active) =>
-    `sf-nav-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200
-     ${active
-       ? "sf-nav-active text-white"
-       : "text-gray-300 hover:bg-white/5 hover:text-white"
-     }`;
+    `sf-nav-item ${active ? "sf-nav-active" : ""}`;
 
   return (
-    <div
-      className="sf-sidebar fixed left-0 top-0 text-white h-screen flex flex-col justify-between z-10"
-    >
-      {/* Top */}
-      <div className="flex flex-col h-full">
-        {/* Logo */}
-        <div className="sf-sidebar-brand px-6 py-8">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-[#3b82f6] to-[#1d4ed8] rounded-lg flex items-center justify-center shadow-lg">
-              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z"/>
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold tracking-wide bg-gradient-to-r from-[#3b82f6] to-[#1d4ed8] bg-clip-text text-transparent">
-              Streamify
-            </h1>
-          </div>
+    <aside className="sf-sidebar" aria-label="Main navigation">
+      <Link to="/" className="sf-sidebar-brand" aria-label="Streamify home">
+        <span className="sf-brand-mark" aria-hidden="true">
+          <FiPlay size={18} fill="currentColor" />
+        </span>
+        <span className="sf-brand-name">Streamify</span>
+      </Link>
+
+      <nav className="sf-sidebar-nav">
+        <div className="sf-nav-group">
+          <p className="sf-nav-label">Discover</p>
+          <Link to="/" className={itemClass(pathname === "/")} aria-current={pathname === "/" ? "page" : undefined}>
+            <FiHome size={19} /><span>Home</span>
+          </Link>
+          <Link to="/explore" className={itemClass(pathname === "/explore")} aria-current={pathname === "/explore" ? "page" : undefined}>
+            <FiCompass size={19} /><span>Explore</span>
+          </Link>
+          <Link to="/trending" className={itemClass(pathname === "/trending")} aria-current={pathname === "/trending" ? "page" : undefined}>
+            <FiTrendingUp size={19} /><span>Trending</span>
+          </Link>
+          <Link to="/upload" onClick={requireSignInForRoute} className={itemClass(pathname === "/upload")} aria-current={pathname === "/upload" ? "page" : undefined}>
+            <FiUpload size={19} /><span>Upload</span>
+          </Link>
         </div>
 
-        {/* MENU */}
-        <div className="sf-sidebar-menu px-4 mb-3 flex-1">
-          <p className="text-xs text-gray-400 mb-4 uppercase tracking-wider">Menu</p>
-          <div className="space-y-2">
-            <Link to="/" className={itemClass(pathname === "/")}>
-              <FiHome size={22} /> Home
-            </Link>
-            <Link to="/explore" className={itemClass(pathname === "/explore")}>
-              <FiCompass size={22} /> Explore
-            </Link>
-            <Link to="/trending" className={itemClass(pathname === "/trending")}>
-              <FiTrendingUp size={22} /> Trending
-            </Link>
-            <Link to="/upload" className={itemClass(pathname === "/upload")}>
-              <FiUpload size={22} /> Upload
-            </Link>
-          </div>
+        <div className="sf-nav-group sf-nav-library">
+          <p className="sf-nav-label">Your library</p>
+          <Link to="/subscriptions" onClick={requireSignInForRoute} className={itemClass(pathname === "/subscriptions")} aria-current={pathname === "/subscriptions" ? "page" : undefined}>
+            <FiUsers size={19} /><span>Subscriptions</span>
+          </Link>
+          <Link to="/playlists" onClick={requireSignInForRoute} className={itemClass(pathname === "/playlists")} aria-current={pathname === "/playlists" ? "page" : undefined}>
+            <FiList size={19} /><span>Playlists</span>{user && playlistsCount > 0 && <span className="sf-nav-count">{playlistsCount}</span>}
+          </Link>
+          <Link to="/mycuts" onClick={requireSignInForRoute} className={itemClass(pathname === "/mycuts")} aria-current={pathname === "/mycuts" ? "page" : undefined}>
+            <FiScissors size={19} /><span>My Cuts</span>{user && watchLaterCount > 0 && <span className="sf-nav-count">{watchLaterCount}</span>}
+          </Link>
+          <Link to="/liked" onClick={requireSignInForRoute} className={itemClass(pathname === "/liked")} aria-current={pathname === "/liked" ? "page" : undefined}>
+            <FiHeart size={19} /><span>Liked videos</span>
+          </Link>
         </div>
+      </nav>
 
-        {/* Separator */}
-        <hr className="mx-4 my-3 border-0 border-t border-white/10" />
-
-        {/* LIBRARY */}
-        <div className="sf-sidebar-library px-4 flex-1">
-          <p className="text-xs text-gray-400 mb-4 uppercase tracking-wider">Library</p>
-          <div className="space-y-2">
-            <Link to="/subscriptions" className={itemClass(pathname === "/subscriptions")}>
-              <FiClock size={22} /> Subscriptions
-            </Link>
-            <Link to="/playlists" className={itemClass(pathname === "/playlists")}>
-              <FiList size={22} /> Playlists {playlistsCount > 0 && <span className="text-xs text-gray-400 ml-1">({playlistsCount})</span>}
-            </Link>
-            <Link to="/mycuts" className={itemClass(pathname === "/mycuts")}>
-              <FiClock size={22} /> My Cuts {watchLaterCount > 0 && <span className="text-xs text-gray-400 ml-1">({watchLaterCount})</span>}
-            </Link>
-            <Link to="/liked" className={itemClass(pathname === "/liked")}>
-              <FiHeart size={22} /> Liked Videos
-            </Link>
-          </div>
+      <div className="sf-sidebar-user">
+        <UserAvatar src={user?.avatar} name={user?.name || "Guest User"} className="sf-sidebar-avatar" alt="" />
+        <div className="sf-sidebar-user-copy">
+          <p>{user?.name || "Guest User"}</p>
+          <span>{user ? "Member" : "Browsing as guest"}</span>
         </div>
       </div>
-
-      {/* Bottom User */}
-      <div className="sf-sidebar-user px-4 py-6 border-t border-white/10">
-        <div className="flex items-center gap-4 p-3 rounded-xl bg-[#1f1f26] shadow-md">
-          <img
-            src={
-              user?.avatar ||
-              "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg"
-            }
-            className="w-12 h-12 rounded-full object-cover border-2 border-[#3b82f6]"
-          />
-          <div>
-            <p className="text-sm font-medium text-white">
-              {user?.name || "Guest User"}
-            </p>
-            <p className="text-xs text-gray-400">
-              {user ? "Member" : "Not Logged In"}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+    </aside>
   );
 }

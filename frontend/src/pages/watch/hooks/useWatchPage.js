@@ -1,17 +1,25 @@
 import { useEffect, useState } from "react";
-import { getVideo } from "../../../api/videoApi";
+import { useLocation } from "react-router-dom";
+import { getPublicTrendingVideos, getRelatedVideos, getVideo } from "../../../api/videoApi";
+import { getExploreData } from "../../../api/exploreApi";
+import { getCachedPublicVideo, cachePublicVideo } from "../../../api/publicVideoCache";
 import { getHomeFeed } from "../../../api/feedApi";
 import { channelPage } from "../../../api/subscriptionApi";
 import { getComments } from "../../../api/commentApi";
 import { useComments } from "./useComments";
 import { useVideoActions } from "./useVideoActions";
 import { useChannelSubscription } from "./useChannelSubscription";
+import { useAuthStore } from "../../../store/authStore";
 
 export function useWatchPage(id) {
+  const location = useLocation();
+  const user = useAuthStore((state) => state.user);
+  const initialized = useAuthStore((state) => state.initialized);
   const [video, setVideo] = useState(null);
   const [channel, setChannel] = useState(null);
   const [relatedVideos, setRelatedVideos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [guestVideoUnavailable, setGuestVideoUnavailable] = useState(false);
 
   const {
     comments,
@@ -32,11 +40,53 @@ export function useWatchPage(id) {
   // FETCH VIDEO + CHANNEL + FEED
   // -----------------------------
   useEffect(() => {
+    if (!initialized) return;
+
     async function fetchData() {
       setLoading(true);
+      setGuestVideoUnavailable(false);
       try {
+        if (!user) {
+          let publicVideo = location.state?.video?._id === id ? location.state.video : getCachedPublicVideo(id);
+
+          if (!publicVideo) {
+            // Guest detail endpoints are protected; resolve from existing public discovery endpoints.
+            const [exploreResult, trendingResult] = await Promise.allSettled([
+              getExploreData(),
+              getPublicTrendingVideos(),
+            ]);
+            const exploreData = exploreResult.status === "fulfilled" ? exploreResult.value.data?.data || {} : {};
+            const exploreVideos = Object.values(exploreData)
+              .filter(Array.isArray)
+              .flat();
+            const trendingVideos = trendingResult.status === "fulfilled" ? trendingResult.value.data?.videos || [] : [];
+            publicVideo = [...exploreVideos, ...trendingVideos].find((candidate) => candidate?._id === id) || null;
+          }
+
+          if (!publicVideo) {
+            setGuestVideoUnavailable(true);
+            setVideo(null);
+            setRelatedVideos([]);
+            setComments([]);
+            return;
+          }
+
+          cachePublicVideo(publicVideo);
+          setVideo({ ...publicVideo, isLiked: false, isDisliked: false, isSubscribed: false });
+          setChannel(publicVideo.owner ? { channel: publicVideo.owner, isSubscribed: false } : null);
+
+          const [commentsResult, relatedResult] = await Promise.allSettled([
+            getComments(id),
+            getRelatedVideos(id),
+          ]);
+          setComments(commentsResult.status === "fulfilled" ? commentsResult.value.data?.comments || [] : []);
+          setRelatedVideos(relatedResult.status === "fulfilled" ? relatedResult.value.data?.videos || [] : []);
+          return;
+        }
+
         // ⭐ INCREMENT VIEW COUNT EXACTLY ONCE
         const res = await getVideo(id, true);
+        cachePublicVideo(res.data.video);
         setVideo(res.data.video);
 
         // CHANNEL INFO
@@ -79,13 +129,14 @@ export function useWatchPage(id) {
     }
 
     fetchData();
-  }, [id]);
+  }, [id, initialized, user, location.state?.video, setComments]);
 
   // -----------------------------
   // RETURN VALUES FOR WATCH PAGE
   // -----------------------------
   return {
     video,
+    guestVideoUnavailable,
     channel,
     relatedVideos,
     loading,

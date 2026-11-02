@@ -14,6 +14,7 @@ export default function WatchPage() {
   const { user } = useAuthStore();
   const {
     video,
+    guestVideoUnavailable,
     channel,
     loading,
     relatedVideos,
@@ -33,13 +34,13 @@ export default function WatchPage() {
   } = useWatchPage(id);
 
   if (loading) return <SkeletonPage />;
-  if (!video) return <div className="text-white p-8">Video not found.</div>;
+  if (!video) return <div className="sf-screen sf-watch-screen sf-watch-empty text-white p-8">{guestVideoUnavailable ? "This video is not available from public discovery. Open it from Explore or try a public video link again." : "Video not found."}</div>;
 
   return (
-    <div className="min-h-screen text-white bg-black flex justify-center">
-      <div className="max-w-[1600px] w-full px-6 py-6 flex gap-6">
+    <div className="sf-screen sf-watch-screen min-h-screen text-white bg-black flex justify-center">
+      <div className="sf-watch-layout max-w-[1600px] w-full px-6 py-6 flex gap-6">
 
-        <div className="flex-1 space-y-6">
+        <div className="sf-watch-main flex-1 space-y-6">
 
           <VideoPlayerCard video={video} onViewsIncremented={handleViewsIncremented} />
 
@@ -53,6 +54,7 @@ export default function WatchPage() {
           <ChannelInfo
             video={video}
             channel={channel}
+            user={user}
             onSubscribe={handleSubscribe}
             onUnsubscribe={handleUnsubscribe}
           />

@@ -1,34 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { FiArrowRight, FiCamera, FiEye, FiEyeOff, FiLock, FiMail, FiPlay, FiUser } from "react-icons/fi";
 import { useAuthStore } from "../../store/authStore";
-import { useNavigate, Link } from "react-router-dom";
+import UserAvatar from "../../components/common/UserAvatar";
+import { safeReturnTo } from "../../components/common/authReturn";
 
 export default function SignupPage() {
   const signup = useAuthStore((s) => s.signup);
   const navigate = useNavigate();
-
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    avatarUrl: "",
-  });
+  const [searchParams] = useSearchParams();
+  const returnTo = safeReturnTo(searchParams.get("returnTo"));
+  const [form, setForm] = useState({ name: "", email: "", password: "", avatarUrl: "" });
   const [isLoading, setIsLoading] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Track mouse movement for 3D effects
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePosition({
-        x: (e.clientX / window.innerWidth - 0.5) * 20,
-        y: (e.clientY / window.innerHeight - 0.5) * 20,
-      });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
-
-  // 🔥 Convert uploaded image → Base64
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -37,7 +22,7 @@ export default function SignupPage() {
     reader.onloadend = () => {
       setForm((prev) => ({
         ...prev,
-        avatarUrl: reader.result, // BASE64 IMAGE STRING
+        avatarUrl: reader.result,
       }));
     };
     reader.readAsDataURL(file);
@@ -47,183 +32,132 @@ export default function SignupPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    //BUG FIXED HERE 
-
     const success = await signup(form);
     setIsLoading(false);
 
     if (success) {
-     navigate("/login", { replace: true });
+      navigate(`/login?returnTo=${encodeURIComponent(returnTo)}`, { replace: true });
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f0f12] via-[#1a1a1f] to-[#0f0f12] overflow-hidden relative">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#3b82f6]/10 rounded-full blur-3xl animate-pulse"
-          style={{
-            transform: `translate(${mousePosition.x * 0.5}px, ${mousePosition.y * 0.5}px)`,
-          }}
-        />
-        <div
-          className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[#1d4ed8]/10 rounded-full blur-3xl animate-pulse"
-          style={{
-            transform: `translate(${mousePosition.x * -0.3}px, ${mousePosition.y * -0.3}px)`,
-            animationDelay: "1s",
-          }}
-        />
-        <div
-          className="absolute top-1/2 left-1/2 w-64 h-64 bg-[#2563eb]/10 rounded-full blur-3xl animate-pulse"
-          style={{
-            transform: `translate(${mousePosition.x * 0.2}px, ${mousePosition.y * 0.2}px)`,
-            animationDelay: "2s",
-          }}
-        />
-      </div>
+    <main className="sf-auth-page sf-auth-page-signup">
+      <div className="sf-auth-layout">
+        <aside className="sf-auth-story" aria-label="About Streamify">
+          <Link to="/" className="sf-auth-logo" aria-label="Streamify home">
+            <span className="sf-brand-mark"><FiPlay size={18} fill="currentColor" /></span>
+            <span>Streamify</span>
+          </Link>
 
-      <div className="relative z-10 w-full max-w-md mx-4">
-        {/* Header with Video Player Icon */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-[#3b82f6] to-[#1d4ed8] rounded-2xl shadow-2xl mb-6 hover:rotate-12 transition-transform duration-300">
-            <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
-          </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-[#3b82f6] via-[#1d4ed8] to-[#2563eb] bg-clip-text text-transparent mb-2">
-            Join Streamify
-          </h1>
-          <p className="text-gray-400 text-lg">Create your account and start streaming</p>
-        </div>
-
-        <form
-          onSubmit={submit}
-          className="bg-[#0f0f12]/80 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-[#2a2a32]/50"
-          style={{
-            transform: `perspective(1000px) rotateX(${mousePosition.y * 0.1}deg) rotateY(${mousePosition.x * 0.1}deg)`,
-          }}
-        >
-          <div className="space-y-6">
-            {/* Avatar Upload */}
-            <div className="flex justify-center">
-              <div className="relative group">
-                <label className="cursor-pointer block">
-                  <input type="file" hidden onChange={handleImageUpload} />
-                  <div className="relative">
-                    <img
-                      src={
-                        form.avatarUrl ||
-                        "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg"
-                      }
-                      alt="avatar"
-                      className="w-24 h-24 rounded-full object-cover border-4 border-[#2a2a32] group-hover:border-[#3b82f6] transition-all duration-300 shadow-lg"
-                    />
-                    <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                    </div>
-                  </div>
-                </label>
-              </div>
+          <div className="sf-auth-composition" aria-hidden="true">
+            <div className="sf-auth-orbit sf-auth-orbit-one" />
+            <div className="sf-auth-orbit sf-auth-orbit-two" />
+            <div className="sf-auth-poster sf-auth-poster-back"><span>COMMUNITY</span></div>
+            <div className="sf-auth-poster sf-auth-poster-front">
+              <span className="sf-auth-poster-play"><FiPlay size={22} fill="currentColor" /></span>
+              <span className="sf-auth-poster-caption">FIND YOUR PEOPLE</span>
             </div>
+            <span className="sf-auth-float-label">Made for shared moments</span>
+          </div>
 
-            {/* Full Name Input */}
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Full Name
-              </label>
-              <div className="relative">
+          <div className="sf-auth-story-copy">
+            <span className="sf-auth-eyebrow">MAKE ROOM FOR MORE</span>
+            <h2>Find your people.<br />Build your own stream.</h2>
+            <p>Follow creators, save the good stuff, and bring friends into the moment.</p>
+          </div>
+          <span className="sf-auth-story-foot">Discover · Create · Connect</span>
+        </aside>
+
+        <section className="sf-auth-form-panel">
+          <div className="sf-auth-mobile-brand">
+            <span className="sf-brand-mark"><FiPlay size={17} fill="currentColor" /></span>
+            <span>Streamify</span>
+          </div>
+          <header className="sf-auth-form-heading">
+            <span className="sf-auth-eyebrow">START YOUR STREAM</span>
+            <h1>Create your account</h1>
+            <p>A home for the videos and creators you love.</p>
+          </header>
+
+          <form onSubmit={submit} className="sf-auth-form sf-auth-form-signup">
+            <label className="sf-auth-avatar-picker" htmlFor="signup-avatar">
+              <span className="sf-auth-avatar-wrap">
+                <UserAvatar src={form.avatarUrl} name={form.name} alt="Account avatar preview" />
+                <span className="sf-auth-avatar-camera"><FiCamera aria-hidden="true" /></span>
+              </span>
+              <span><strong>Add a profile photo</strong><small>Optional · JPG or PNG</small></span>
+              <input id="signup-avatar" type="file" onChange={handleImageUpload} />
+            </label>
+
+            <div className="sf-auth-field">
+              <label htmlFor="signup-name">Your name</label>
+              <div className="sf-auth-input-wrap">
+                <FiUser aria-hidden="true" />
                 <input
+                  id="signup-name"
                   type="text"
-                  placeholder="Enter your full name"
-                  className="w-full p-4 bg-[#1a1a1f]/50 border border-[#2a2a32] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent transition-all duration-300 hover:bg-[#1a1a1f]/70"
+                  autoComplete="name"
+                  placeholder="How should we call you?"
+                  value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   required
                 />
-                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
               </div>
             </div>
 
-            {/* Email Input */}
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
+            <div className="sf-auth-field">
+              <label htmlFor="signup-email">Email address</label>
+              <div className="sf-auth-input-wrap">
+                <FiMail aria-hidden="true" />
                 <input
+                  id="signup-email"
                   type="email"
-                  placeholder="Enter your email"
-                  className="w-full p-4 bg-[#1a1a1f]/50 border border-[#2a2a32] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent transition-all duration-300 hover:bg-[#1a1a1f]/70"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   required
                 />
-                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                  </svg>
-                </div>
               </div>
             </div>
 
-            {/* Password Input */}
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Password
-              </label>
-              <div className="relative">
+            <div className="sf-auth-field">
+              <label htmlFor="signup-password">Password</label>
+              <div className="sf-auth-input-wrap">
+                <FiLock aria-hidden="true" />
                 <input
-                  type="password"
+                  id="signup-password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
                   placeholder="Create a password"
-                  className="w-full p-4 bg-[#1a1a1f]/50 border border-[#2a2a32] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent transition-all duration-300 hover:bg-[#1a1a1f]/70"
+                  value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   required
                 />
-                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                </div>
+                <button
+                  type="button"
+                  className="sf-auth-password-toggle"
+                  onClick={() => setShowPassword((visible) => !visible)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <FiEyeOff aria-hidden="true" /> : <FiEye aria-hidden="true" />}
+                </button>
               </div>
             </div>
 
-            {/* Sign Up Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-4 bg-gradient-to-r from-[#3b82f6] to-[#1d4ed8] text-white font-semibold rounded-xl hover:from-[#2563eb] hover:to-[#1e40af] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-            >
-              {isLoading ? (
-                <div className="flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  Creating Account...
-                </div>
-              ) : (
-                "Create Account"
-              )}
+            <button type="submit" disabled={isLoading} className="sf-auth-submit">
+              <span>{isLoading ? "Creating account…" : "Create account"}</span>
+              {isLoading ? <span className="sf-auth-spinner" aria-hidden="true" /> : <FiArrowRight aria-hidden="true" />}
             </button>
-          </div>
 
-          {/* Login Link */}
-          <div className="text-center mt-6">
-            <p className="text-gray-400">
-              Already have an account?{" "}
-              <Link
-                to="/login"
-                className="text-[#3b82f6] hover:text-[#2563eb] font-semibold transition-colors duration-300"
-              >
-                Sign in here
-              </Link>
+            <p className="sf-auth-switch">
+              Already have an account? <Link to={`/login?returnTo=${encodeURIComponent(returnTo)}`}>Sign in</Link>
             </p>
-          </div>
-        </form>
+            <Link to={returnTo} className="sf-auth-guest"><FiArrowRight aria-hidden="true" /> Continue as guest</Link>
+          </form>
+          <p className="sf-auth-form-foot">Join a community built around what you love to watch.</p>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }

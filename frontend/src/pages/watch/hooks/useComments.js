@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { getReplies, replyComment } from "../../../api/commentApi";
+import { useGuestActions } from "../../../components/common/guestActionContext";
 
 export function useComments(videoId) {
+  const { requireAuth } = useGuestActions();
   const [comments, setComments] = useState([]);
   const [replies, setReplies] = useState({});
   const [showReplies, setShowReplies] = useState({});
   const [replyFormVisibility, setReplyFormVisibility] = useState({});
 
   async function handleReply(commentId, text) {
+    if (!requireAuth()) return;
     const res = await replyComment(commentId, videoId, text);
 
     setReplies(prev => ({

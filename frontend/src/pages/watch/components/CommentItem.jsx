@@ -3,6 +3,7 @@ import ReplyItem from "./ReplyItem";
 import CommentAvatar from "./Common/CommentAvatar";
 import LoadingSpinner from "./Common/LoadingSpinner";
 import { format } from "date-fns";
+import { useGuestActions } from "../../../components/common/guestActionContext";
 
 export default function CommentItem({
   comment,
@@ -17,6 +18,7 @@ export default function CommentItem({
 }) {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
+  const { requireAuth } = useGuestActions();
 
   async function submitReply() {
     if (!text.trim()) return;
@@ -62,19 +64,15 @@ export default function CommentItem({
 
         {/* ACTION BUTTONS */}
         <div className="flex items-center gap-4 mt-2 text-sm font-medium">
-          {user && (
-            <button
-              onClick={() =>
-                setReplyFormVisibility(prev => ({
-                  ...prev,
-                  [comment._id]: !prev[comment._id]
-                }))
-              }
-              className="text-blue-400 hover:text-blue-300 transition-colors"
-            >
-              Reply
-            </button>
-          )}
+          <button
+            onClick={() => {
+              if (!requireAuth()) return;
+              setReplyFormVisibility(prev => ({ ...prev, [comment._id]: !prev[comment._id] }));
+            }}
+            className="text-blue-400 hover:text-blue-300 transition-colors"
+          >
+            Reply
+          </button>
 
           {comment.repliesCount > 0 && (
             <button
