@@ -266,10 +266,6 @@ web: npm start
 
 ISC
 
-## 👨‍💻 Authors
-
-- [Your Name]
-
 ---
 
 **⭐ Star this repo if useful!**
